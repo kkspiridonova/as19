@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "881065077013",
+    "project_id": "authp1-dada3",
+    "storage_bucket": "authp1-dada3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881065077013:android:f670ad0f4dea28d8e6611c",
+        "android_client_info": {
+          "package_name": "com.example.a1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBchTOqVL-5SJ4gPibI1G5jNPWwscyr4Sc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
