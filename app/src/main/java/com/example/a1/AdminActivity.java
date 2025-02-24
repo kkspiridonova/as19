@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class AdminActivity extends AppCompatActivity {
-
     private ListView servicesListView;
     private ListView usersListView;
     private FirebaseFirestore db;
@@ -46,9 +45,7 @@ public class AdminActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
-
         db = FirebaseFirestore.getInstance();
-
         servicesListView = findViewById(R.id.servicesListView);
         usersListView = findViewById(R.id.usersListView);
         serviceNameEditText = findViewById(R.id.serviceNameEditText);
@@ -376,28 +373,6 @@ public class AdminActivity extends AppCompatActivity {
         updateAdapter(filteredList);
     }
 
-    private void setupCategorySpinner() {
-        String[] categories = {"All", "Hair", "Nails", "Spa Services"};
-
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, categories);
-
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        spinnerServiceCategories.setAdapter(categoryAdapter);
-
-        spinnerServiceCategories.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedCategory = categories[position];
-                filterServicesByCategory(selectedCategory);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
 
     private void filterServicesByCategory(String category) {
         List<Service> filteredList = new ArrayList<>();

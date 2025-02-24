@@ -46,7 +46,6 @@ public class EmployeeActivity extends AppCompatActivity {
         createServiceButton = findViewById(R.id.createServiceButton);
         editServiceButton = findViewById(R.id.editServiceButton);
         deleteServiceButton = findViewById(R.id.deleteServiceButton);
-
         searchViewServices = findViewById(R.id.searchViewServices);
         spinnerServiceCategories = findViewById(R.id.spinnerServiceCategories);
 
@@ -128,21 +127,16 @@ public class EmployeeActivity extends AppCompatActivity {
 
     private void setupCategorySpinner() {
         String[] categories = {"All", "Hair", "Nails", "Spa Services"};
-
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, categories);
-
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         spinnerServiceCategories.setAdapter(categoryAdapter);
-
         spinnerServiceCategories.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedCategory = Objects.requireNonNull(categories)[position];
                 filterServicesByCategory(selectedCategory);
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -163,17 +157,14 @@ public class EmployeeActivity extends AppCompatActivity {
         }
         updateAdapter(filteredList);
     }
-
     private void restoreFullServiceList() {
         updateAdapter(originalServiceList);
     }
-
     private void updateAdapter(List<Service> newList) {
         serviceList.clear();
         serviceList.addAll(newList);
         adapter.notifyDataSetChanged();
     }
-
     private void createService() {
         String serviceName = serviceNameEditText.getText().toString().trim();
         String priceStr = servicePriceEditText.getText().toString().trim();
@@ -207,22 +198,19 @@ public class EmployeeActivity extends AppCompatActivity {
         String serviceName = serviceNameEditText.getText().toString().trim();
         String priceStr = servicePriceEditText.getText().toString().trim();
         String serviceCategory = serviceCategoryEditText.getText().toString().trim();
-
         if (selectedServiceId == null) {
             Toast.makeText(this, "Пожалуйста, выберите услугу для редактирования", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (serviceName.isEmpty() || priceStr.isEmpty() || serviceCategory.isEmpty()) {
             Toast.makeText(this, "Пожалуйста, заполните все поля для услуги", Toast.LENGTH_SHORT).show();
             return;
         }
-
         try {
             double price = Double.parseDouble(priceStr);
             db.collection("services")
                     .document(selectedServiceId)
-                    .update("serviceName", serviceName, "price", price, "category", serviceCategory) // Include category
+                    .update("serviceName", serviceName, "price", price, "category", serviceCategory)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Услуга обновлена", Toast.LENGTH_SHORT).show();
                         clearServiceInputFields();
@@ -242,7 +230,6 @@ public class EmployeeActivity extends AppCompatActivity {
             Toast.makeText(this, "Пожалуйста, выберите услугу для удаления", Toast.LENGTH_SHORT).show();
             return;
         }
-
         db.collection("services")
                 .document(selectedServiceId)
                 .delete()

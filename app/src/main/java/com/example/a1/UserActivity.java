@@ -130,21 +130,16 @@ public class UserActivity extends AppCompatActivity {
 
     private void setupCategorySpinner() {
         String[] categories = {"All", "Hair", "Nails", "Spa Services"};
-
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, categories);
-
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         spinnerServiceCategories.setAdapter(categoryAdapter);
-
         spinnerServiceCategories.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedCategory = categories[position];
                 filterServicesByCategory(selectedCategory);
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -153,7 +148,6 @@ public class UserActivity extends AppCompatActivity {
 
     private void filterServicesByCategory(String category) {
         List<Service> filteredList = new ArrayList<>();
-
         if (category.equals("All")) {
             filteredList.addAll(originalServiceList);
         } else {
@@ -163,20 +157,17 @@ public class UserActivity extends AppCompatActivity {
                 }
             }
         }
-
         updateAdapter(filteredList);
     }
 
     private void restoreFullServiceList() {
         updateAdapter(originalServiceList);
     }
-
     private void updateAdapter(List<Service> newList) {
         serviceList.clear();
         serviceList.addAll(newList);
         adapter.notifyDataSetChanged();
     }
-
     private void showDateTimePickerDialog(String servicesID) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Выберите дату и время для записи");
@@ -254,9 +245,7 @@ public class UserActivity extends AppCompatActivity {
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
-
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
-
         datePickerDialog.show();
     }
 }
