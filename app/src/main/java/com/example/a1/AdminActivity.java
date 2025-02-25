@@ -2,6 +2,7 @@ package com.example.a1;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -14,11 +15,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class AdminActivity extends AppCompatActivity {
@@ -29,7 +35,7 @@ public class AdminActivity extends AppCompatActivity {
     private List<User> userList;
     private ServiceAdapter serviceAdapter;
     private UserAdapter userAdapter;
-    private EditText serviceNameEditText, servicePriceEditText, serviceCategoryEditText; // Add Category EditText
+    private EditText serviceNameEditText, servicePriceEditText, serviceCategoryEditText;
     private EditText userEmailEditText, userRoleEditText;
     private Button createServiceButton, editServiceButton, deleteServiceButton;
     private Button createUserButton, editUserButton, deleteUserButton;
@@ -41,10 +47,15 @@ public class AdminActivity extends AppCompatActivity {
     private List<String> categories;
     private List<Service> originalServiceList;
 
+    private FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
+
+        auth = FirebaseAuth.getInstance();
+
         db = FirebaseFirestore.getInstance();
         servicesListView = findViewById(R.id.servicesListView);
         usersListView = findViewById(R.id.usersListView);
@@ -89,7 +100,6 @@ public class AdminActivity extends AppCompatActivity {
         createServiceButton.setOnClickListener(v -> createService());
         editServiceButton.setOnClickListener(v -> editService());
         deleteServiceButton.setOnClickListener(v -> deleteService());
-
         createUserButton.setOnClickListener(v -> createUser());
         editUserButton.setOnClickListener(v -> editUser());
         deleteUserButton.setOnClickListener(v -> deleteUser());
@@ -114,7 +124,6 @@ public class AdminActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.isEmpty()) {
@@ -184,6 +193,8 @@ public class AdminActivity extends AppCompatActivity {
                         Toast.makeText(this, "Услуга создана", Toast.LENGTH_SHORT).show();
                         clearServiceInputFields();
                         loadServices();
+                        String details = "Service Name: " + serviceName + ", Category: " + serviceCategory;
+                        logAdminAction("create_service", details);
                         Log.d("AdminAction", "Created service: " + serviceName + ", category: " + serviceCategory);
                     })
                     .addOnFailureListener(e -> {
@@ -195,7 +206,6 @@ public class AdminActivity extends AppCompatActivity {
             Log.e("AdminAction", "Invalid price format for service: " + serviceName, e);
         }
     }
-
 
     private void editService() {
         String serviceName = serviceNameEditText.getText().toString().trim();
@@ -221,6 +231,8 @@ public class AdminActivity extends AppCompatActivity {
                         Toast.makeText(this, "Услуга обновлена", Toast.LENGTH_SHORT).show();
                         clearServiceInputFields();
                         loadServices();
+                        String details = "Service ID: " + selectedServiceId + ", Service Name: " + serviceName + ", Category: " + serviceCategory;
+                        logAdminAction("edit_service", details);
                         Log.d("AdminAction", "Edited service: " + serviceName + ", category: " + serviceCategory);
                     })
                     .addOnFailureListener(e -> {
@@ -232,7 +244,6 @@ public class AdminActivity extends AppCompatActivity {
             Log.e("AdminAction", "Invalid price format for service: " + serviceName, e);
         }
     }
-
 
     private void deleteService() {
         if (selectedServiceId == null) {
@@ -247,6 +258,7 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(this, "Услуга удалена", Toast.LENGTH_SHORT).show();
                     clearServiceInputFields();
                     loadServices();
+                    logAdminAction("delete_service", "Service ID: " + selectedServiceId);
                     Log.d("AdminAction", "Deleted service with ID: " + selectedServiceId);
                 })
                 .addOnFailureListener(e -> {
@@ -260,8 +272,6 @@ public class AdminActivity extends AppCompatActivity {
         servicePriceEditText.setText("");
         serviceCategoryEditText.setText("");
     }
-
-
 
     private void loadUsers() {
         db.collection("users")
@@ -291,6 +301,10 @@ public class AdminActivity extends AppCompatActivity {
             Toast.makeText(this, "Пожалуйста, заполните все поля для пользователя", Toast.LENGTH_SHORT).show();
             return;
         }
+        if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            Toast.makeText(AdminActivity.this,"Неправильный email",Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         User newUser = new User(null, email, role);
 
@@ -300,6 +314,7 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(this, "Пользователь создан", Toast.LENGTH_SHORT).show();
                     clearUserInputFields();
                     loadUsers();
+                    logAdminAction("create_user", "Email: " + email + ", Role: " + role);
                     Log.d("AdminAction", "Created user: " + email + ", role: " + role);
                 })
                 .addOnFailureListener(e -> {
@@ -311,17 +326,14 @@ public class AdminActivity extends AppCompatActivity {
     private void editUser() {
         String email = userEmailEditText.getText().toString().trim();
         String role = userRoleEditText.getText().toString().trim();
-
         if (selectedUserId == null) {
             Toast.makeText(this, "Пожалуйста, выберите пользователя для редактирования", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (email.isEmpty() || role.isEmpty()) {
             Toast.makeText(this, "Пожалуйста, заполните все поля для пользователя", Toast.LENGTH_SHORT).show();
             return;
         }
-
         db.collection("users")
                 .document(selectedUserId)
                 .update("email", email, "role", role)
@@ -329,6 +341,7 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(this, "Пользователь обновлен", Toast.LENGTH_SHORT).show();
                     clearUserInputFields();
                     loadUsers();
+                    logAdminAction("edit_user", "User ID: " + selectedUserId + ", Email: " + email + ", Role: " + role);
                     Log.d("AdminAction", "Edited user: " + email + ", role: " + role);
                 })
                 .addOnFailureListener(e -> {
@@ -349,6 +362,7 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(this, "Пользователь удален", Toast.LENGTH_SHORT).show();
                     clearUserInputFields();
                     loadUsers();
+                    logAdminAction("delete_user", "User ID: " + selectedUserId);
                     Log.d("AdminAction", "Deleted user with ID: " + selectedUserId);
                 })
                 .addOnFailureListener(e -> {
@@ -357,11 +371,11 @@ public class AdminActivity extends AppCompatActivity {
                 });
     }
 
-
     private void clearUserInputFields() {
         userEmailEditText.setText("");
         userRoleEditText.setText("");
     }
+
     private void filterServices(String query) {
         List<Service> filteredList = new ArrayList<>();
 
@@ -370,32 +384,54 @@ public class AdminActivity extends AppCompatActivity {
                 filteredList.add(service);
             }
         }
-        updateAdapter(filteredList);
+        updateServiceAdapter(filteredList);
     }
 
+    private void updateServiceAdapter(List<Service> newList) {
+        serviceList.clear();
+        serviceList.addAll(newList);
+        serviceAdapter.notifyDataSetChanged();
+    }
 
     private void filterServicesByCategory(String category) {
         List<Service> filteredList = new ArrayList<>();
-
         if (category.equals("All")) {
             filteredList.addAll(originalServiceList);
         } else {
             for (Service service : originalServiceList) {
-                if (service.getCategory() != null && service.getCategory().equals(category)) {
+                if (Objects.equals(service.getCategory(), category)) {
                     filteredList.add(service);
                 }
             }
         }
-        updateAdapter(filteredList);
+        updateServiceAdapter(filteredList);
     }
+
     private void restoreFullServiceList() {
-        updateAdapter(originalServiceList);
+        updateServiceAdapter(originalServiceList);
     }
 
+    private void logAdminAction(String action, String details) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            Map<String, Object> logEntry = new HashMap<>();
+            logEntry.put("userId", user.getUid());
+            logEntry.put("email", user.getEmail());
+            logEntry.put("timestamp", new Date());
+            logEntry.put("action", action);
+            logEntry.put("details", details);
 
-    private void updateAdapter(List<Service> newList) {
-        serviceList.clear();
-        serviceList.addAll(newList);
-        serviceAdapter.notifyDataSetChanged();
+            db.collection("admin_actions")
+                    .add(logEntry)
+                    .addOnSuccessListener(documentReference -> {
+                        Log.d("AdminActionLog", "Admin action logged: " + action + ", Details: " + details);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("AdminActionLog", "Failed to log admin action: " + action, e);
+                    });
+        } else {
+            Log.w("AdminActionLog", "Admin action could not be logged: no user.");
+        }
     }
 }
